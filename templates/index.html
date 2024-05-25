@@ -1,0 +1,194 @@
+{% extends 'template.html' %}
+{% block title %}Вы на главной странице{% endblock %}
+{% block body %}
+    <style>
+    #sentence {
+        visibility: hidden;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    body {
+        text-align: center;
+        background-image: url('https://www.chicagoveininstitute.com/wp-content/uploads/2019/07/desk-job-effect-on-vein-health.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        position: relative;
+    }
+    @keyframes move {
+          from {
+              left: -30%;
+          }
+          to {
+              left: 38%;
+          }
+        }
+
+        .results {
+            visibility: hidden;
+            width: 400px; /* Ширина прямоугольника */
+            height: 250px; /* Высота прямоугольника */
+            background: #2098d1;
+            border-radius: 10px; /* Сглаживание краев */
+            box-shadow: 0 8px 10px rgba(0, 0, 0, 0.247); /* Тень */
+            position: absolute;
+            top: 50%;
+            left: 5%;
+        }
+    
+    </style>
+<div class="Text"></div>
+<div class="main_container">
+    <p>Нажмите пробел, чтобы начать (Space)</p>
+    <p id="sentence"></p>
+    <input id="correctText">
+    <div id="timer">0:00</div>
+    <p id="mistakes"></p>
+    <p id="theEnd"></p>
+</div>
+
+<div class="results" id="results">
+    <div class="result_block" id="accuracy"></div>
+    <div class="result_block" id="speed"></div>
+    <div class="result_block" id="correct_text"></div>
+    <div class="result_block" id="incorrect_text"></div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var sentenceElement = document.getElementById("sentence");
+        var currentPosition = 0;
+        var Flag = false;
+        var timerInterval, allTime, incorrectLetters = 0, correctLetters = 0;
+        var mistakes = document.getElementById('mistakes');
+        var input = document.getElementById('correctText');
+        var accuracy = document.getElementById('accuracy');
+        var speed_block = document.getElementById('speed');
+        var correct_text = document.getElementById('correct_text');
+        var incorrect_text = document.getElementById('incorrect_text');
+        // Получаем элемент, которому нужно добавить анимацию
+        var results = document.querySelector('.results');
+        // Добавляем стили, включая анимацию
+         // move - имя анимации, 1s - длительность, forwards - сохранить состояние после завершения анимации
+
+
+
+    function showResults() {
+        setTimeout(function() {
+        document.getElementById('results').classList.add('show');
+        }, 100); // Задержка в 100 миллисекунд
+    }
+
+
+
+        var sentences = [
+            "Сегодняшний день был настолько жарким, что даже птицы не пели. Небо окрасилось в золотистые тона.",
+            "После дождя на асфальте остались блестящие отражения. Летний дождь быстро закончился.",
+            "Лучи солнца проникали сквозь листву деревьев, создавая игру света и тени. Солнце освещало лес своими последними лучами.",
+            "В воздухе пахло свежей зеленью и цветами. Звуки природы создавали гармонию.",
+            "По дороге встретилась стая птиц, мирно клюющих зерно. Поля были покрыты цветущими маками.",
+            "Ветер шептал секреты старых деревьев, покачивая их кроны. Далеко на горизонте виднелись горы.",
+            "Вдали виднелись горы, покрытые пышными зелеными лесами. На полянке цвели дикие цветы.",
+            "Ручей медленно тек вдоль дороги, создавая успокаивающий звук. Сосны тянулись к небу.",
+            "Мы сидели на берегу озера и наблюдали за игрой света на водной глади. Туман окутывал долину.",
+            "Каждый шаг наполнял наши легкие свежим воздухом и чистотой природы. В лесу пахло хвоей и свежестью.",
+            "Летний день расцвел во всей своей красе, словно картина художника. Ночь была тихой и спокойной.",
+            "Лес зашумел, когда мы прошли мимо его таинственных глубин. Лесной пруд отражал звездное небо.",
+            "Вода в реке блестела на солнце, словно тысячи бриллиантов. Дорога вела нас вглубь зелёного леса.",
+            "Птицы чирикали в кустах, напевая мелодии радости и свободы. Вдалеке слышался шум водопада.",
+            "Закатное небо окрасилось в огненные оттенки, создавая волшебное зрелище. Звуки леса становились громче с наступлением ночи.",
+            "Вдали зазвучали звуки флейты, приглашая нас в мир музыки и мечтаний. Птицы возвращались в свои гнезда, завершив дневные хлопоты.",
+            "Лепестки цветов падали на землю, словно красочный ковер. Вечерний бриз приносил свежесть и прохладу.",
+            "Мы пересекли поля, покрытые золотистой травой, идущей до горизонта. Мы пересекли мост, ведущий в сказочный лес.",
+            "Воздух наполнился ароматом свежих ягод, растущих в лесу. Светлячки порхали над лугом, создавая волшебную атмосферу.",
+            "Звезды зажглись на ночном небе, как мерцающие алмазы. Звезды сверкали на ночном небе, словно драгоценные камни в чёрном бархате.",
+            "В лесу слышался шепот листьев под ногами, словно приглашение на таинственное путешествие. Мы собрались у костра, обогреваясь его теплом и слушая шепот огня.",
+            "Роса украсила траву мелкими алмазами, блестящими на солнце. Солнце медленно скрывалось за горизонтом, окрашивая небо в оранжевые и розовые тона.",
+            "Паутина покрывала ветви деревьев, словно тонкие нити хрустального кружева. Дождевые капли тихо стучали по листьям, создавая музыку дождя.",
+            "Звуки природы наполнили наши сердца радостью и умиротворением. Воздух был пронизан ароматами цветов и трав, создавая неповторимый букет.",
+            "Луна взошла над горизонтом, освещая ночной лес своим мягким светом. Прогулка под лунным светом вечером вдохновляет на мечтания и размышления."
+        ];
+
+        function getRandomSentence() {
+            return sentences[Math.floor(Math.random() * sentences.length)];
+        }
+
+        sentenceElement.textContent = getRandomSentence();
+        var sentence = sentenceElement.textContent.trim();
+
+        function init() {
+            sec = 0;
+            min = 0;
+            timerInterval = setInterval(tick, 1000);
+        }
+
+        function tick() {
+            sec++;
+            if (sec === 60) {
+                sec = 0;
+                min++;
+            }
+            var timerElement = document.getElementById("timer");
+            timerElement.textContent = min + ":" + (sec < 10 ? "0" : "") + sec;
+        }
+
+        input.addEventListener("input", function() {
+            if (Flag === true) {
+                var inputValue = input.value;
+
+                if (inputValue.length > sentence.length) {
+                    input.value = inputValue.slice(0, sentence.length);
+                    return;
+                }
+                if (inputValue !== sentence.slice(0, inputValue.length)) {
+                    input.value = inputValue.slice(0, -1);
+                    incorrectLetters++;
+                    sentenceElement.innerHTML = "<span style='color: red;'>" + sentence[currentPosition] + "</span>" + sentence.slice(currentPosition + 1);
+                    mistakes.textContent = ("Ошибки: " + incorrectLetters);
+                } else {
+                    currentPosition++;
+                    correctLetters++;
+                    if (currentPosition === sentence.length) {
+                        sentenceElement.textContent = sentence.slice(0, -1);
+                        theEnd.textContent = ("Вы ввели все буквы из предложения");
+                        clearInterval(timerInterval);
+                        allTime = min * 60 + sec;
+                        input.blur();
+                        const speed = Math.round((input.value.length/allTime)*60);
+                        accuracy.textContent = parseFloat((correctLetters / (correctLetters + incorrectLetters)) * 100).toFixed(1);
+                        speed_block.textContent = speed;
+                        correct_text.textContent = correctLetters;
+                        incorrect_text.textContent = incorrectLetters;
+                        results.style = 'visibility : visible; animation : move 1s forwards'
+                        console.log(allTime + " Это всё время");
+                        console.log(input.value.length + " Это длина текста");
+                        console.log(speed + " Это скорость (знаков в минуту)")
+                        console.log(parseFloat((correctLetters / (correctLetters + incorrectLetters)) * 100).toFixed(1) + "% Это процент правильности");
+                    } else {
+                        sentenceElement.innerHTML = sentence.slice(currentPosition);
+                    }
+                }
+            }
+        });
+
+        // Предотвращаем удаление символа
+        document.getElementById("correctText").addEventListener("keydown", function(event) {
+            // Проверяем, нажата ли клавиша Backspace
+            if (event.key === "Backspace") {
+                event.preventDefault();
+            }
+        });
+
+        document.addEventListener("keydown", function(event) {
+            if (event.key === ' ' && !Flag) {
+                event.preventDefault();
+                input.focus();
+                Flag = true;
+                init();
+                sentenceElement.style.visibility = 'visible';
+            }
+        });
+    });
+</script>
+{% endblock %}

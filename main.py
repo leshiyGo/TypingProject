@@ -1,0 +1,158 @@
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, flash, session, jsonify
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+
+# настройка базы данных
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+db = SQLAlchemy(app)
+
+
+app.secret_key = '123'
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(30), unique=True, nullable=False)
+    password = db.Column(db.String(30), nullable=False)
+    username = db.Column(db.String(30), unique=True, nullable=False)
+
+    results = db.relationship('Result', backref='user', lazy=True)
+
+
+class Level(db.Model):
+    __tablename__ = 'levels'
+    id = db.Column(db.Integer, primary_key=True)
+    sentence = db.Column(db.Text, nullable=False)
+
+    results = db.relationship('Result', backref='level', lazy=True)
+
+
+class Result(db.Model):
+    __tablename__ = 'results'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    level_id = db.Column(db.Integer, db.ForeignKey('levels.id'), nullable=False)
+    speed = db.Column(db.Integer, nullable=False)
+    accuracy = db.Column(db.Float, nullable=False)
+    correct = db.Column(db.Integer, nullable=False)
+    incorrect = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+
+@app.route('/')
+def index():
+    # если ключа user_id (название сами придумываем) нет в сессиях
+    # значит пользователь не залогинился, значит отображаем страницу index.html
+    if 'user_id' not in session:
+        return render_template('index.html')
+    # если ключ user_id есть в сессиях
+    # значит пользователь залогинился, значит отображаем страницу profile.html
+    # и передаём в неё пользователя с id, равным значению, который лежит по ключу user_id в сессии
+    else:
+        user = User.query.filter_by(id=session.get('user_id')).first()
+        return render_template('profile.html', par=user)
+
+    #return render_template('index.html')
+
+
+@app.route('/register', methods=['POST', 'GET'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        user = User(username=username, email=email, password=password)
+        db.session.add(user)
+        db.session.commit()
+        return redirect('/login')
+    else:
+        return render_template('register.html')
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        # ищем в таблице User пользователя с почтой и паролем, который мы ввели в форму
+        user = User.query.filter_by(email=email, password=password).first()
+        # если такой пользователь есть
+        if user:
+            # создаём ключ user_id (название для ключа любое) и присваиваем ему значение,
+            # равное id найденного пользователя
+            session['user_id'] = user.id
+            # отображаем страницу пользователя и передаём туда пользователя, который вошел в систему
+            return render_template('profile.html', par=user)
+        # если пользователя с такими данными нет - тогда перенаправление на страницу логина снова
+        else:
+            return redirect('/login')
+    else:
+        return render_template('login.html')
+
+
+# функция кнопки выхода из системы на страницу profile.html - удаляет значение по ключу user_id
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user_id', None)
+    return redirect('/')
+
+
+@app.route('/levels_page')
+def levels_page():
+    return render_template("levels_page.html")
+
+@app.route('/get_level/<int:level_id>')
+def get_level(level_id):
+    level = Level.query.get(level_id)
+    if level:
+        return jsonify(sentence=level.sentence)
+    else:
+        return jsonify(error="Level not found"), 404
+
+
+if __name__ == '__main__':
+    
+    sentences = [
+            "Сегодняшний день был настолько жарким, что даже птицы не пели. Небо окрасилось в золотистые тона.",
+            "После дождя на асфальте остались блестящие отражения. Летний дождь быстро закончился.",
+            "Лучи солнца проникали сквозь листву деревьев, создавая игру света и тени. Солнце освещало лес своими последними лучами.",
+            "В воздухе пахло свежей зеленью и цветами. Звуки природы создавали гармонию.",
+            "По дороге встретилась стая птиц, мирно клюющих зерно. Поля были покрыты цветущими маками.",
+            "Ветер шептал секреты старых деревьев, покачивая их кроны. Далеко на горизонте виднелись горы.",
+            "Вдали виднелись горы, покрытые пышными зелеными лесами. На полянке цвели дикие цветы.",
+            "Ручей медленно тек вдоль дороги, создавая успокаивающий звук. Сосны тянулись к небу.",
+            "Мы сидели на берегу озера и наблюдали за игрой света на водной глади. Туман окутывал долину.",
+            "Каждый шаг наполнял наши легкие свежим воздухом и чистотой природы. В лесу пахло хвоей и свежестью.",
+            "Летний день расцвел во всей своей красе, словно картина художника. Ночь была тихой и спокойной.",
+            "Лес зашумел, когда мы прошли мимо его таинственных глубин. Лесной пруд отражал звездное небо.",
+            "Вода в реке блестела на солнце, словно тысячи бриллиантов. Дорога вела нас вглубь зелёного леса.",
+            "Птицы чирикали в кустах, напевая мелодии радости и свободы. Вдалеке слышался шум водопада.",
+            "Закатное небо окрасилось в огненные оттенки, создавая волшебное зрелище. Звуки леса становились громче с наступлением ночи.",
+            "Вдали зазвучали звуки флейты, приглашая нас в мир музыки и мечтаний. Птицы возвращались в свои гнезда, завершив дневные хлопоты.",
+            "Лепестки цветов падали на землю, словно красочный ковер. Вечерний бриз приносил свежесть и прохладу.",
+            "Мы пересекли поля, покрытые золотистой травой, идущей до горизонта. Мы пересекли мост, ведущий в сказочный лес.",
+            "Воздух наполнился ароматом свежих ягод, растущих в лесу. Светлячки порхали над лугом, создавая волшебную атмосферу.",
+            "Звезды зажглись на ночном небе, как мерцающие алмазы. Звезды сверкали на ночном небе, словно драгоценные камни в чёрном бархате.",
+            "В лесу слышался шепот листьев под ногами, словно приглашение на таинственное путешествие. Мы собрались у костра, обогреваясь его теплом и слушая шепот огня.",
+            "Роса украсила траву мелкими алмазами, блестящими на солнце. Солнце медленно скрывалось за горизонтом, окрашивая небо в оранжевые и розовые тона.",
+            "Паутина покрывала ветви деревьев, словно тонкие нити хрустального кружева. Дождевые капли тихо стучали по листьям, создавая музыку дождя.",
+            "Звуки природы наполнили наши сердца радостью и умиротворением. Воздух был пронизан ароматами цветов и трав, создавая неповторимый букет.",
+            "Луна взошла над горизонтом, освещая ночной лес своим мягким светом. Прогулка под лунным светом вечером вдохновляет на мечтания и размышления."
+        ]
+
+    with app.app_context():
+        # создание базы данных
+        db.create_all()
+
+        # проверяем, есть ли в таблице записи, если нет - тогда только добавляем
+        if Level.query.count() == 0:
+            for sentence in sentences:
+                new_level = Level(sentence=sentence)
+                db.session.add(new_level)
+
+            db.session.commit()
+    # старт сервера, port=0 значит любой свободный порт
+    app.run(debug=True, port=0)

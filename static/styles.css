@@ -1,0 +1,23 @@
+#sentence {
+    visibility: hidden;
+}
+.main_container {
+    background-color: rgba(255, 255, 255, 0.815);
+}
+.container {
+    background-color: rgb(255, 255, 255);
+}
+.form-floating {
+    margin: 2% 20%;
+}
+.btn btn-primary w-100 py-2 {
+    margin: 20%;
+}
+#correctText {
+    width: 600px;  
+    text-align: center;
+}
+#theEnd {
+    color: rgb(0, 38, 255);
+}
+
