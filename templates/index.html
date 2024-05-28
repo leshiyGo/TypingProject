@@ -2,6 +2,9 @@
 {% block title %}Вы на главной странице{% endblock %}
 {% block body %}
     <style>
+    header {
+        --bs-border-color: #ffffff;
+    }
     #sentence {
         visibility: hidden;
         font-size: 20px;
@@ -14,43 +17,203 @@
         background-repeat: no-repeat;
         position: relative;
     }
+    .container {
+        border-radius: 0.4em;
+    }
     @keyframes move {
-          from {
-              left: -30%;
-          }
-          to {
-              left: 38%;
-          }
+        from {
+            top: -30%;
+            left: 30.5%;
+            opacity: 0;
         }
+        to {
+            top: 110%;
+            left: 30.5%;
+            opacity: 1;
+        }
+    }
+    @keyframes slideUp {
+        from {
+            bottom: -150%;
+            left: 38%;
+            opacity: 0;
+        }
+        to {
+            bottom: -102%;
+            left: 38%;
+            opacity: 1;
+        }
+    }
+    .results {
+        text-align: center;
+        visibility: hidden;
+        width: 665.45px;
+        height: 250px; /* Высота прямоугольника */
+        background: #fbfbfb;
+        border-radius: 10px; /* Сглаживание краев */
+        box-shadow: 0 8px 10px rgba(0, 0, 0, 0.247); /* Тень */
+        position: absolute;
+        top: 50%;
+        left: 5%;
+    }
 
-        .results {
-            visibility: hidden;
-            width: 400px; /* Ширина прямоугольника */
-            height: 250px; /* Высота прямоугольника */
-            background: #2098d1;
-            border-radius: 10px; /* Сглаживание краев */
-            box-shadow: 0 8px 10px rgba(0, 0, 0, 0.247); /* Тень */
-            position: absolute;
-            top: 50%;
-            left: 5%;
-        }
+    .text { 
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        border-radius: 6px 6px 0 0;
+        padding: 9px 15px;
+    }
     
+    .center {
+        text-align: center;
+    }
+
+    .result_block {
+        display: inline-block;
+        text-align: left;
+    }
+
+    .result_block h6 {
+        color: #777;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+        margin-top: 7px;
+        margin-bottom: 0rem;
+    }
+    .pic {
+        display: inline-block;
+        font-size: 30px;
+        vertical-align: top;
+    }
+    .result_block div {
+        display: inline-block;
+        margin: 5px 0 0 5px;
+    }
+    .fun_text {
+        padding: 1% 3% 0 3%;
+        color: #000000;
+        font-size: 17px;
+        font-weight: bold;
+        word-wrap: break-word; /* Перенос длинных слов */
+        white-space: normal;
+    }
+    #theEnd {
+        font-weight: 600;
+    }
+    #mistakes {
+        font-size: large;
+    }
+    #start {
+        font-size: larger;
+    }
+    .buttons {
+        width: 520px;
+        text-align: right;
+        visibility: hidden;
+        position: absolute;
+    }
+    .but {
+        cursor: pointer;
+        font-size: 20px;
+        color: white;
+        text-align: center;
+        width: 130px;
+        height: 32px;
+        border-radius: 0.375rem;
+        background-color: #0d6efd;
+        --bs-border-radius-sm: 0.25rem;
+        --bs-border-radius-lg: 0.5rem;
+        --bs-border-radius-xl: 1rem;
+        --bs-border-radius-xxl: 2rem;
+        margin: 0 1% 0 0;
+        display: inline-block;
+    }
+    .but:hover {
+        background-color: #0d48d1;
+    }
+    #complete {
+        background-color: rgb(231, 30, 30);
+    }
+    #complete:hover {
+        background-color: rgb(174, 25, 25);
+    }
+    #save {
+        background-color: rgb(44, 228, 44);
+    }
+    #save:hover {
+        background-color: rgb(34, 161, 34);
+    }
     </style>
 <div class="Text"></div>
+
 <div class="main_container">
-    <p>Нажмите пробел, чтобы начать (Space)</p>
-    <p id="sentence"></p>
+    <p id="start">
+        {% if level_id %}
+        Уровень :
+        {% else %}
+
+        {% endif %}
+        <span id="id_of_level">
+            {{ level_id }}
+        </span>
+        Нажмите пробел, чтобы начать печать (Space)
+    </p>
+    <p id="sentence">
+        {% if sentence%}
+            {{ sentence }}
+        {% else %}
+        Узнай свою скорость печати, написав этот небольшой текст. Для того, чтобы получить доступ к уровням, зарегистрируйся или войди в свой аккаунт. 
+        {% endif %}
+    </p>
     <input id="correctText">
-    <div id="timer">0:00</div>
+    <div><b id="timer">0:00</b></div>
     <p id="mistakes"></p>
     <p id="theEnd"></p>
 </div>
-
+<form method="post">
 <div class="results" id="results">
-    <div class="result_block" id="accuracy"></div>
-    <div class="result_block" id="speed"></div>
-    <div class="result_block" id="correct_text"></div>
-    <div class="result_block" id="incorrect_text"></div>
+    <div class="text">Результат:</div>
+    <div class="center">
+        <div class="result_block" id="accuracy" style="padding: 0px 25px 0px 0px;">
+            <div class="pic">🎯</div>
+            <div>
+                <h6>Аккуратность</h6>
+                <b><span id="show_accuracy"></span>%</b>
+            </div>
+        </div>
+        <div class="result_block" id="speed" style="padding: 0px 25px 0px 0px;">
+            <div class="pic">🏎️</div>
+            <div>
+                <h6>Скорость</h6>
+                <b><span id="show_speed"></span> зн./мин.</b>
+            </div>
+        </div>
+        <div class="result_block" id="correct_text" style="padding: 0px 25px 0px 0px;">
+            <div class="pic">✔</div>
+            <div>
+                <h6>Правильно набрано</h6>
+                <b><span id="show_cor"></span></b>
+            </div>
+        </div>
+        <div class="result_block" id="incorrect_text" style="padding: 0 10px 0 0;">
+            <div class="pic">❌</div>
+            <div>
+                <h6>Ошибок</h6>
+                <b><span id="show_incor"></span></b>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="text">Характер набора:</div>
+        <div class="fun_text"></div>
+    </div>
+    </div>
+</form>
+<div class="buttons" id="buttons">
+    <div class="but" id="complete" type="submit">Завершить</div>
+    <div class="but" id="again" type="submit" style="width: 170px;;">Начать заново</div>
+    <div class="but" id="save" type="submit">Сохранить</div>
 </div>
 
 {% endblock %}
@@ -63,15 +226,15 @@
         var timerInterval, allTime, incorrectLetters = 0, correctLetters = 0;
         var mistakes = document.getElementById('mistakes');
         var input = document.getElementById('correctText');
-        var accuracy = document.getElementById('accuracy');
-        var speed_block = document.getElementById('speed');
-        var correct_text = document.getElementById('correct_text');
-        var incorrect_text = document.getElementById('incorrect_text');
+        var accuracy = document.getElementById('show_accuracy');
+        var speed_block = document.getElementById('show_speed');
+        var correct_text = document.getElementById('show_cor');
+        var incorrect_text = document.getElementById('show_incor');
+        var start_text = document.getElementById('start');
+        var buttons = document.querySelector('.buttons');
+        var fun_text = document.querySelector('.fun_text');
         // Получаем элемент, которому нужно добавить анимацию
         var results = document.querySelector('.results');
-        // Добавляем стили, включая анимацию
-         // move - имя анимации, 1s - длительность, forwards - сохранить состояние после завершения анимации
-
 
 
     function showResults() {
@@ -80,115 +243,126 @@
         }, 100); // Задержка в 100 миллисекунд
     }
 
-
-
-        var sentences = [
-            "Сегодняшний день был настолько жарким, что даже птицы не пели. Небо окрасилось в золотистые тона.",
-            "После дождя на асфальте остались блестящие отражения. Летний дождь быстро закончился.",
-            "Лучи солнца проникали сквозь листву деревьев, создавая игру света и тени. Солнце освещало лес своими последними лучами.",
-            "В воздухе пахло свежей зеленью и цветами. Звуки природы создавали гармонию.",
-            "По дороге встретилась стая птиц, мирно клюющих зерно. Поля были покрыты цветущими маками.",
-            "Ветер шептал секреты старых деревьев, покачивая их кроны. Далеко на горизонте виднелись горы.",
-            "Вдали виднелись горы, покрытые пышными зелеными лесами. На полянке цвели дикие цветы.",
-            "Ручей медленно тек вдоль дороги, создавая успокаивающий звук. Сосны тянулись к небу.",
-            "Мы сидели на берегу озера и наблюдали за игрой света на водной глади. Туман окутывал долину.",
-            "Каждый шаг наполнял наши легкие свежим воздухом и чистотой природы. В лесу пахло хвоей и свежестью.",
-            "Летний день расцвел во всей своей красе, словно картина художника. Ночь была тихой и спокойной.",
-            "Лес зашумел, когда мы прошли мимо его таинственных глубин. Лесной пруд отражал звездное небо.",
-            "Вода в реке блестела на солнце, словно тысячи бриллиантов. Дорога вела нас вглубь зелёного леса.",
-            "Птицы чирикали в кустах, напевая мелодии радости и свободы. Вдалеке слышался шум водопада.",
-            "Закатное небо окрасилось в огненные оттенки, создавая волшебное зрелище. Звуки леса становились громче с наступлением ночи.",
-            "Вдали зазвучали звуки флейты, приглашая нас в мир музыки и мечтаний. Птицы возвращались в свои гнезда, завершив дневные хлопоты.",
-            "Лепестки цветов падали на землю, словно красочный ковер. Вечерний бриз приносил свежесть и прохладу.",
-            "Мы пересекли поля, покрытые золотистой травой, идущей до горизонта. Мы пересекли мост, ведущий в сказочный лес.",
-            "Воздух наполнился ароматом свежих ягод, растущих в лесу. Светлячки порхали над лугом, создавая волшебную атмосферу.",
-            "Звезды зажглись на ночном небе, как мерцающие алмазы. Звезды сверкали на ночном небе, словно драгоценные камни в чёрном бархате.",
-            "В лесу слышался шепот листьев под ногами, словно приглашение на таинственное путешествие. Мы собрались у костра, обогреваясь его теплом и слушая шепот огня.",
-            "Роса украсила траву мелкими алмазами, блестящими на солнце. Солнце медленно скрывалось за горизонтом, окрашивая небо в оранжевые и розовые тона.",
-            "Паутина покрывала ветви деревьев, словно тонкие нити хрустального кружева. Дождевые капли тихо стучали по листьям, создавая музыку дождя.",
-            "Звуки природы наполнили наши сердца радостью и умиротворением. Воздух был пронизан ароматами цветов и трав, создавая неповторимый букет.",
-            "Луна взошла над горизонтом, освещая ночной лес своим мягким светом. Прогулка под лунным светом вечером вдохновляет на мечтания и размышления."
-        ];
-
-        function getRandomSentence() {
-            return sentences[Math.floor(Math.random() * sentences.length)];
-        }
-
-        sentenceElement.textContent = getRandomSentence();
-        var sentence = sentenceElement.textContent.trim();
-
-        function init() {
+    
+    var sentence = sentenceElement.textContent.trim();
+    function init() {
+        sec = 0;
+        min = 0;
+        timerInterval = setInterval(tick, 1000);
+    }
+    function tick() {
+        sec++;
+        if (sec === 60) {
             sec = 0;
-            min = 0;
-            timerInterval = setInterval(tick, 1000);
+            min++;
         }
-
-        function tick() {
-            sec++;
-            if (sec === 60) {
-                sec = 0;
-                min++;
+        var timerElement = document.getElementById("timer");
+        timerElement.textContent = min + ":" + (sec < 10 ? "0" : "") + sec;
+    }
+    input.addEventListener("input", function() {
+        if (Flag === true) {
+            var inputValue = input.value;
+            if (inputValue.length > sentence.length) {
+                input.value = inputValue.slice(0, sentence.length);
+                return;
             }
-            var timerElement = document.getElementById("timer");
-            timerElement.textContent = min + ":" + (sec < 10 ? "0" : "") + sec;
-        }
-
-        input.addEventListener("input", function() {
-            if (Flag === true) {
-                var inputValue = input.value;
-
-                if (inputValue.length > sentence.length) {
-                    input.value = inputValue.slice(0, sentence.length);
-                    return;
-                }
-                if (inputValue !== sentence.slice(0, inputValue.length)) {
-                    input.value = inputValue.slice(0, -1);
-                    incorrectLetters++;
-                    sentenceElement.innerHTML = "<span style='color: red;'>" + sentence[currentPosition] + "</span>" + sentence.slice(currentPosition + 1);
-                    mistakes.textContent = ("Ошибки: " + incorrectLetters);
-                } else {
-                    currentPosition++;
-                    correctLetters++;
-                    if (currentPosition === sentence.length) {
-                        sentenceElement.textContent = sentence.slice(0, -1);
-                        theEnd.textContent = ("Вы ввели все буквы из предложения");
-                        clearInterval(timerInterval);
-                        allTime = min * 60 + sec;
-                        input.blur();
-                        const speed = Math.round((input.value.length/allTime)*60);
-                        accuracy.textContent = parseFloat((correctLetters / (correctLetters + incorrectLetters)) * 100).toFixed(1);
-                        speed_block.textContent = speed;
-                        correct_text.textContent = correctLetters;
-                        incorrect_text.textContent = incorrectLetters;
-                        results.style = 'visibility : visible; animation : move 1s forwards'
-                        console.log(allTime + " Это всё время");
-                        console.log(input.value.length + " Это длина текста");
-                        console.log(speed + " Это скорость (знаков в минуту)")
-                        console.log(parseFloat((correctLetters / (correctLetters + incorrectLetters)) * 100).toFixed(1) + "% Это процент правильности");
+            if (inputValue !== sentence.slice(0, inputValue.length)) {
+                input.value = inputValue.slice(0, -1);
+                incorrectLetters++;
+                sentenceElement.innerHTML = "<span style='color: red;'>" + sentence[currentPosition] + "</span>" + sentence.slice(currentPosition + 1);
+                mistakes.textContent = ("Ошибки: " + incorrectLetters);
+            } else {
+                currentPosition++;
+                correctLetters++;
+                if (currentPosition === sentence.length) {
+                    sentenceElement.textContent = sentence.slice(0, -1);
+                    theEnd.textContent = ("Вы ввели все буквы из предложения");
+                    clearInterval(timerInterval);
+                    allTime = min * 60 + sec;
+                    input.blur();
+                    const speed = Math.round((input.value.length/allTime)*60);
+                    accuracy.textContent = parseFloat((correctLetters / (correctLetters + incorrectLetters)) * 100).toFixed(1);
+                    speed_block.textContent = speed;
+                    correct_text.textContent = correctLetters;
+                    incorrect_text.textContent = incorrectLetters; 
+                    //body.style = 'filter : blur(8px)';
+                    results.style = 'visibility : visible; animation : move 1s forwards';
+                    buttons.style.animation = 'slideUp 1s forwards';
+                    buttons.style.visibility = 'visible';
+                    if (speed < 120) {
+                        fun_text.innerHTML = 'Медленная скорость печати, характерная для человека, имеющего небольшой опыт набора текста на клавиатуре';
+                    } else if (speed >= 120 && speed <= 160) {
+                        fun_text.innerHTML = 'Скорость печати среднестатистического человека, набирающего текст 2-4 пальцами, подглядывая на клавиатуру';
+                    } else if (speed > 160 && speed < 260) {
+                        fun_text.innerHTML = 'Средняя скорость печати человека, который владеет навыком слепого десятипальцевого метода набора';
+                    } else if (speed >= 260 && speed <= 350) {
+                        fun_text.innerHTML = 'Хорошая скорость печати человека, который прошел обучение по курсу слепой печати более одного раза или развивает скорость набора с помощью клавиатурного тренажёра';
+                    } else if (speed > 350 && speed < 400) {
+                        fun_text.innerHTML = 'Скорость набора текста на профессиональном уровне владения клавиатурой';
                     } else {
-                        sentenceElement.innerHTML = sentence.slice(currentPosition);
+                        fun_text.innerHTML = 'Очень высокая скорость печати, близкая к скорости речи';
                     }
+                } else {
+                    sentenceElement.innerHTML = sentence.slice(currentPosition);
                 }
             }
-        });
-
-        // Предотвращаем удаление символа
-        document.getElementById("correctText").addEventListener("keydown", function(event) {
-            // Проверяем, нажата ли клавиша Backspace
-            if (event.key === "Backspace") {
-                event.preventDefault();
+        }
+    });
+    document.getElementById('save').addEventListener('click', function() {
+        const speed_inf = document.getElementById('show_speed').textContent;
+        const accuracy_inf = document.getElementById('show_accuracy').textContent;
+        const correctText_inf = document.getElementById('show_cor').textContent;
+        const incorrectText_inf = document.getElementById('show_incor').textContent;
+        const id_of_lvl = document.getElementById('id_of_level').textContent;
+        const data = {
+            id_level: parseInt(id_of_lvl),
+            speed: parseInt(speed_inf),
+            accuracy: parseFloat(accuracy_inf),
+            correct_text: parseInt(correctText_inf),
+            incorrect_text: parseInt(incorrectText_inf)
+        };
+        
+        fetch('/save_results', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Results saved successfully!');
+            } else {
+                alert('Failed to save results.');
             }
-        });
-
-        document.addEventListener("keydown", function(event) {
-            if (event.key === ' ' && !Flag) {
-                event.preventDefault();
-                input.focus();
-                Flag = true;
-                init();
-                sentenceElement.style.visibility = 'visible';
-            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
         });
     });
+    // Предотвращаем удаление символа
+    document.getElementById("correctText").addEventListener("keydown", function(event) {
+        // Проверяем, нажата ли клавиша Backspace
+        if (event.key === "Backspace") {
+            event.preventDefault();
+        }
+    });
+    document.addEventListener("keydown", function(event) {
+        if (event.key === ' ' && !Flag) {
+            event.preventDefault();
+            input.focus();
+            Flag = true;
+            init();
+            sentenceElement.style.visibility = 'visible';
+            start_text.style.visibility = 'hidden'; 
+            //mistakes.textContent = ("Ошибки: " + incorrectLetters);
+            //theEnd.textContent = ("Вы ввели все буквы из предложения");
+            //buttons.style.visibility = 'visible';
+            //buttons.style.animation = 'slideUp 1s forwards';
+            //results.style = 'visibility : visible; animation : move 1s forwards';
+        }
+    });
+});
 </script>
 {% endblock %}
