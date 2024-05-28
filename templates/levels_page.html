@@ -2,7 +2,7 @@
 {% block title %}Уровни{% endblock %}
 
 {% block body %}
-<style>href
+<style>
     body {
         background-color: bisque;
     }
@@ -17,19 +17,18 @@
         padding: 1%;
         margin: 2%;
     }
-    
 
 </style>
 <div class="container_for_levels">
-    <a type="button" class="btn btn-primary" id="lvl1" onclick="fetchLevel(1)">Уровень 1</a>
-    <a type="button" class="btn btn-primary" id="lvl2" onclick="fetchLevel(2)">Уровень 2</a>
-    <a type="button" class="btn btn-primary" id="lvl3" onclick="fetchLevel(3)">Уровень 3</a>
-    <a type="button" class="btn btn-primary" id="lvl4" onclick="fetchLevel(4)">Уровень 4</a>
-    <a type="button" class="btn btn-primary" id="lvl5" onclick="fetchLevel(5)">Уровень 5</a>
-    <a type="button" class="btn btn-primary" id="lvl6" onclick="fetchLevel(6)">Уровень 6</a>
-    <a type="button" class="btn btn-primary" id="lvl7" onclick="fetchLevel(7)">Уровень 7</a>
-    <a type="button" class="btn btn-primary" id="lvl8" onclick="fetchLevel(8)">Уровень 8</a>
-    <a type="button" class="btn btn-primary" id="lvl9" onclick="fetchLevel(9)">Уровень 9</a>
+    <a type="button" class="btn btn-primary" id="lvl1" onclick="fetchLevel(1)">Уровень 1 </a>
+    <a type="button" class="btn btn-primary" id="lvl2" onclick="fetchLevel(2)">Уровень 2 </a>
+    <a type="button" class="btn btn-primary" id="lvl3" onclick="fetchLevel(3)">Уровень 3 </a>
+    <a type="button" class="btn btn-primary" id="lvl4" onclick="fetchLevel(4)">Уровень 4 </a>
+    <a type="button" class="btn btn-primary" id="lvl5" onclick="fetchLevel(5)">Уровень 5 </a>
+    <a type="button" class="btn btn-primary" id="lvl6" onclick="fetchLevel(6)">Уровень 6 </a>
+    <a type="button" class="btn btn-primary" id="lvl7" onclick="fetchLevel(7)">Уровень 7 </a>
+    <a type="button" class="btn btn-primary" id="lvl8" onclick="fetchLevel(8)">Уровень 8 </a>
+    <a type="button" class="btn btn-primary" id="lvl9" onclick="fetchLevel(9)">Уровень 9 </a>
     <a type="button" class="btn btn-primary" id="lvl10" onclick="fetchLevel(10)">Уровень 10</a>
     <a type="button" class="btn btn-primary" id="lvl11" onclick="fetchLevel(11)">Уровень 11</a>
     <a type="button" class="btn btn-primary" id="lvl12" onclick="fetchLevel(12)">Уровень 12</a>
@@ -51,19 +50,13 @@
 
 </div>
 <script>
-    function fetchLevel(levelId) {
-            fetch(`/get_level/${levelId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sentence) {
-                        document.getElementById('levelSentence').textContent = data.sentence;
-                    } else {
-                        document.getElementById('levelSentence').textContent = 'Уровень не найден';
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                });
+
+function fetchLevel(levelId) {
+            const form = document.createElement('form');
+            form.method = 'GET';
+            form.action = `/get_level/${levelId}`;
+            document.body.appendChild(form);
+            form.submit();
         }
 </script>
 {% endblock %}
