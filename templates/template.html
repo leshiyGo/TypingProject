@@ -12,24 +12,50 @@
         .col-md-3 {
           width: auto;
         }
+        .name b {
+          font-size: 35px;
+          color: rgb(24, 124, 195);
+          font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+        .sence {
+          font: medium;
+          font-size: large;
+          font-weight: bolder;
+          display: inline-block;
+        }
+        .container {
+          text-align: center;
+        }
+        .w-100 {
+          width: 777.6px !important;
+        }
     </style>
 </head>
 <body>
   <div class="container">
     <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-      <div class="col-md-3 mb-2 mb-md-0">
-        <a href="/" class="d-inline-flex link-body-emphasis text-decoration-none">
-          <svg class="bi" width="40" height="32" role="img" aria-label="Bootstrap"><use xlink:href="#bootstrap"></use></svg>
-        </a>
+      <div>
+        <div class="logo"></div>
+        <div class="name">
+          <b>TextRacer </b>
+          <p class="sence"> - Проверьте свою скорость и точность печати.</p>
+        </div>
       </div>
       <div class="col-md-3 text-end">
+        {% if sessionId %}
+        <a  type="button" class="btn btn-primary" href="{{ url_for('profile') }}">Профиль</a>
         <a  type="button" class="btn btn-primary" href="{{ url_for('levels_page') }}">Уровни</a>
-        <a  type="button" class="btn btn-primary" href="{{ url_for('index') }}">Главная</a>
+        <a  type="button" class="btn btn-primary" href="{{ url_for('index') }}" action="/logout">Выход</a>
+        {% else %}
         <a  type="button" class="btn btn-primary" href="{{ url_for('login') }}">Войти</a>
         <a type="button" class="btn btn-primary" href="{{ url_for('register') }}">Регистрация</a>
+        {% endif %}
       </div>
     </header>
   </div>
+  <script>
+    
+  </script>
     {% block body %}{% endblock %}
     {% block script %}{% endblock %}
 </body>
