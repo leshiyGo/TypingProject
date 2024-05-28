@@ -47,14 +47,13 @@ def index():
     # если ключа user_id (название сами придумываем) нет в сессиях
     # значит пользователь не залогинился, значит отображаем страницу index.html
     if 'user_id' not in session:
-        return render_template('index.html')
+        return render_template('index.html', sessionId=session.get('user_id', None))
     # если ключ user_id есть в сессиях
     # значит пользователь залогинился, значит отображаем страницу profile.html
     # и передаём в неё пользователя с id, равным значению, который лежит по ключу user_id в сессии
     else:
         user = User.query.filter_by(id=session.get('user_id')).first()
-        return render_template('profile.html', par=user)
-
+        return render_template('index.html', par=user, sessionId=session.get('user_id', None))
     #return render_template('index.html')
 
 
@@ -93,6 +92,12 @@ def login():
         return render_template('login.html')
 
 
+@app.route('/profile')
+def profile():
+
+    return render_template('profile.html')
+
+
 # функция кнопки выхода из системы на страницу profile.html - удаляет значение по ключу user_id
 @app.route('/logout', methods=['POST'])
 def logout():
@@ -102,15 +107,43 @@ def logout():
 
 @app.route('/levels_page')
 def levels_page():
-    return render_template("levels_page.html")
+    if 'user_id' not in session:
+        return render_template('index.html', sessionId=session.get('user_id', None))
+    # если ключ user_id есть в сессиях
+    # значит пользователь залогинился, значит отображаем страницу profile.html
+    # и передаём в неё пользователя с id, равным значению, который лежит по ключу user_id в сессии
+    else:
+        return render_template("levels_page.html")
+
 
 @app.route('/get_level/<int:level_id>')
 def get_level(level_id):
     level = Level.query.get(level_id)
+    print(level.sentence)
     if level:
-        return jsonify(sentence=level.sentence)
+        return render_template('index.html', sentence=level.sentence, level_id=level.id)
     else:
-        return jsonify(error="Level not found"), 404
+        return redirect('index')
+    
+
+@app.route('/save_results', methods=['POST'])
+def save_results():
+    data = request.get_json()
+
+    new_result = Result(
+        user_id=session.get('user_id'),   # вот здесь исправил, было просто user_id = 1
+        level_id=data['id_level'],
+        speed=data['speed'],
+        accuracy=data['accuracy'],
+        correct=data['correct_text'],
+        incorrect=data['incorrect_text']
+    )
+
+    db.session.add(new_result)
+    db.session.commit()
+
+    return jsonify({'success': True})
+
 
 
 if __name__ == '__main__':
