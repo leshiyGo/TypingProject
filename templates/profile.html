@@ -1,13 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Мой профиль</title>
-</head>
-<body>
+{% extends 'template.html' %}
+{% block title %}Мой профиль{% endblock %}
+{% block body %}
      <form action="/logout" method="post" id="logout-form">
             <input type="submit" value="Logout" width="70px" height="40px">
         </form>
-
-</body>
-</html>
+{% endblock %}
