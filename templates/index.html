@@ -144,8 +144,12 @@
     #save:hover {
         background-color: rgb(34, 161, 34);
     }
+    .Text {
+        position:absolute;
+        visibility: hidden;
+    }
     </style>
-<div class="Text"></div>
+<div class="Text">{{ user_in_sess }}</div>
 
 <div class="main_container">
     <p id="start">
@@ -163,7 +167,7 @@
         {% if sentence%}
             {{ sentence }}
         {% else %}
-        Узнай свою скорость печати, написав этот небольшой текст. Для того, чтобы получить доступ к уровням, зарегистрируйся или войди в свой аккаунт. 
+        Узнай свою скорость печати, написав этот небольшой текст. Для того, чтобы получить доступ к уровням, зарегистрируйся или войди в свой аккаунт.
         {% endif %}
     </p>
     <input id="correctText">
@@ -212,7 +216,7 @@
 </form>
 <div class="buttons" id="buttons">
     <div class="but" id="complete" type="submit">Завершить</div>
-    <div class="but" id="again" type="submit" style="width: 170px;;">Начать заново</div>
+    <div class="but" id="again" type="submit" style="width: 170px;">Начать заново</div>
     <div class="but" id="save" type="submit">Сохранить</div>
 </div>
 
@@ -236,14 +240,12 @@
         // Получаем элемент, которому нужно добавить анимацию
         var results = document.querySelector('.results');
 
-
     function showResults() {
         setTimeout(function() {
         document.getElementById('results').classList.add('show');
         }, 100); // Задержка в 100 миллисекунд
     }
 
-    
     var sentence = sentenceElement.textContent.trim();
     function init() {
         sec = 0;
@@ -259,6 +261,11 @@
         var timerElement = document.getElementById("timer");
         timerElement.textContent = min + ":" + (sec < 10 ? "0" : "") + sec;
     }
+
+    document.getElementById('again').addEventListener('click', function() {
+            location.reload();
+        });
+        
     input.addEventListener("input", function() {
         if (Flag === true) {
             var inputValue = input.value;
@@ -308,6 +315,18 @@
             }
         }
     });
+
+    document.getElementById('complete').addEventListener('click', function() {
+        const user_in_sess= document.getElementsByClassName('Text').textContent;
+            if (user_in_sess == false){
+                // Если пользователь не вошел в систему, перенаправляем его на страницу входа
+                window.location.href = '/register';
+            } else {
+                // Если пользователь вошел в систему, выполняем действие завершения
+                window.location.href = '/levels_page';
+            }
+        });
+
     document.getElementById('save').addEventListener('click', function() {
         const speed_inf = document.getElementById('show_speed').textContent;
         const accuracy_inf = document.getElementById('show_accuracy').textContent;
@@ -322,7 +341,12 @@
             incorrect_text: parseInt(incorrectText_inf)
         };
         
-        fetch('/save_results', {
+        const levelId = parseInt(document.getElementById('id_of_level').textContent);
+        if (!levelId) {
+            alert("Действие не возможно. Вы не вошли в систему.")
+        }
+        else {
+            fetch('/save_results', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -332,7 +356,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Results saved successfully!');
+                alert('Результаты успешно сохранены!');
             } else {
                 alert('Failed to save results.');
             }
@@ -340,7 +364,10 @@
         .catch((error) => {
             console.error('Error:', error);
         });
+        }
+        
     });
+
     // Предотвращаем удаление символа
     document.getElementById("correctText").addEventListener("keydown", function(event) {
         // Проверяем, нажата ли клавиша Backspace
@@ -356,11 +383,6 @@
             init();
             sentenceElement.style.visibility = 'visible';
             start_text.style.visibility = 'hidden'; 
-            //mistakes.textContent = ("Ошибки: " + incorrectLetters);
-            //theEnd.textContent = ("Вы ввели все буквы из предложения");
-            //buttons.style.visibility = 'visible';
-            //buttons.style.animation = 'slideUp 1s forwards';
-            //results.style = 'visibility : visible; animation : move 1s forwards';
         }
     });
 });
