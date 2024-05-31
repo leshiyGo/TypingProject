@@ -1,13 +1,19 @@
-{% extends 'template.html' %}
+{% extends 'template_for_log.html' %}
 {% block title %}Уровни{% endblock %}
 
 {% block body %}
 <style>
     body {
-        background-color: bisque;
+        background-image: url('https://blog.ikraikra.ru/wp-content/uploads/2024/02/16.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        position: relative;
+    }
+    .container {
+        border-radius: 0.4em;
     }
     .container_for_levels {
-        background-color: rgba(0, 255, 89, 0.616);
+        background-color: rgba(255, 255, 255, 0.616);
         padding: 5%;
     }
     #lvl1, #lvl2, #lvl3, #lvl4, #lvl5, #lvl6,
@@ -45,8 +51,6 @@
     <a type="button" class="btn btn-primary" id="lvl23" onclick="fetchLevel(23)">Уровень 23</a>
     <a type="button" class="btn btn-primary" id="lvl24" onclick="fetchLevel(24)">Уровень 24</a>
     <a type="button" class="btn btn-primary" id="lvl25" onclick="fetchLevel(25)">Уровень 25</a>
-    <h2>Предложение уровня:</h2>
-    <p id="levelSentence"></p>
 
 </div>
 <script>
