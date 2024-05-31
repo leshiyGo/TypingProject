@@ -1,7 +1,136 @@
-{% extends 'template.html' %}
+{% extends 'template_for_log.html' %}
 {% block title %}Мой профиль{% endblock %}
 {% block body %}
-     <form action="/logout" method="post" id="logout-form">
-            <input type="submit" value="Logout" width="70px" height="40px">
-        </form>
+<style>
+    form {
+        text-align: right;
+    }
+    .container {
+        border-radius: 0.4em;
+    }
+    body {
+        background-image: url('https://www.chicagoveininstitute.com/wp-content/uploads/2019/07/desk-job-effect-on-vein-health.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        position: relative;
+    }
+    .container_prof {
+        background-color: rgba(255, 255, 255, 0.829);
+        padding: 2% 5% 0 5%;
+        margin-top: 1%;
+    }
+    input {
+        font-weight: 400;
+        text-align: center;
+        width: 170px;
+        height: 32px; 
+        color: white;
+        background-color: #fd0d0d; 
+        --bs-border-radius-sm: 0.25rem; 
+        --bs-border-radius-lg: 0.5rem;
+        --bs-border-radius-xl: 1rem;
+        --bs-border-radius-xxl: 2rem;
+        margin-right: 11.9%;
+        margin-top: 0.5%;
+    }
+    .result-item {
+        display: inline-block;
+    }
+    #best-result-info {
+        margin-left: 31%;
+        font-size: x-large;
+    }
+    #user-result-info {
+        margin-left: 10.3%;
+        font-size: x-large;
+    }
+</style>
+    <form action="/logout" method="post" id="logout-form">
+            <input type="submit" value="Выйти из аккаунта">
+    </form>
+
+    <div class="container_prof">
+        <div>
+            <h2 style="text-align: center;">Нажми на Уровень, чтобы узнать результат</h2>
+        </div>
+        
+        <div id="levels" class="mb-3">
+        {% for i in range(1, 26) %}
+            <a href="#" class="btn btn-primary m-1" id="lvl{{ i }}" data-level-id="{{ i }}">Уровень {{ i }}</a>
+        {% endfor %}
+        </div>
+    
+        <div id="best-result" style="visibility: hidden;">
+            <h2 style="display: inline-block; margin-right: 20%; margin-left: 7%;">Мой лучший результат</h2>
+            <h2 style="display: inline-block; margin-right: 0.5%;">Лучший результат среди пользователей</h2>
+
+            <div class="result-container" id="result-container">
+                <div id="user-result-info" class="result-item"></div>
+                <div id="best-result-info" class="result-item"></div>
+            </div>
+            
+        </div>
+
+    </div>
+
+</div>
+<script>
+    let activeButton = null;
+    function addClickListenerForLevel(levelId) {
+        document.getElementById(`lvl${levelId}`).addEventListener('click', function(event) {
+            event.preventDefault();
+            // Снимаем выделение с предыдущей активной кнопки
+            if (activeButton) {
+                activeButton.style.backgroundColor = '';
+                activeButton.style.color = '';
+            }
+            // Выделяем текущую кнопку
+            this.style.backgroundColor = 'yellow';
+            this.style.color = 'black';
+            // Устанавливаем текущую кнопку как активную
+            activeButton = this;
+            var container = document.getElementById('result-container');
+            var container2 = document.getElementById('best-result');
+            container.style = 'visibility : visible;';
+            container2.style = 'visibility : visible';
+            event.preventDefault();
+            fetch(`/get_best_result/${levelId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const userResultInfo = document.getElementById('user-result-info');
+                    const bestResultInfo = document.getElementById('best-result-info');
+                    
+                    if (data.user_best_result) {
+                        userResultInfo.innerHTML = `
+                            <div>Скорость: ${data.user_best_result.speed} зн./мин.</div>
+                            <div>Точность: ${data.user_best_result.accuracy}%</div>
+                            <div>Правильные: ${data.user_best_result.correct}</div>
+                            <div>Неправильные: ${data.user_best_result.incorrect}</div>
+                            <div>Дата: ${data.user_best_result.date}</div>
+                        `;
+                    } else {
+                        userResultInfo.textContent = 'Ваш результат не найден';
+                    }
+                    if (data.best_result) {
+                        bestResultInfo.innerHTML = `
+                            <div>Пользователь: ${data.best_result.username}</div>
+                            <div>Скорость: ${data.best_result.speed} зн./мин.</div>
+                            <div>Точность: ${data.best_result.accuracy}%</div>
+                            <div>Правильные: ${data.best_result.correct}</div>
+                            <div>Неправильные: ${data.best_result.incorrect}</div>
+                            <div>Дата: ${data.best_result.date}</div>
+                        `;
+                    } else {
+                        bestResultInfo.textContent = 'Лучший результат для уровня не найден';
+                    }
+                })
+                .catch(error => console.error('Ошибка:', error));
+        });
+    }
+
+        // Добавление обработчиков событий для всех уровней
+        for (let i = 1; i <= 25; i++) {
+            addClickListenerForLevel(i);
+        }
+</script>
 {% endblock %}
