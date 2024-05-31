@@ -47,13 +47,13 @@ def index():
     # если ключа user_id (название сами придумываем) нет в сессиях
     # значит пользователь не залогинился, значит отображаем страницу index.html
     if 'user_id' not in session:
-        return render_template('index.html', sessionId=session.get('user_id', None))
+        return render_template('index.html', sessionId=session.get('user_id', None), user_in_sess=False)
     # если ключ user_id есть в сессиях
     # значит пользователь залогинился, значит отображаем страницу profile.html
     # и передаём в неё пользователя с id, равным значению, который лежит по ключу user_id в сессии
     else:
         user = User.query.filter_by(id=session.get('user_id')).first()
-        return render_template('index.html', par=user, sessionId=session.get('user_id', None))
+        return render_template('index.html', par=user, sessionId=session.get('user_id', None), user_in_sess=True)
     #return render_template('index.html')
 
 
@@ -94,8 +94,10 @@ def login():
 
 @app.route('/profile')
 def profile():
-
-    return render_template('profile.html')
+    if 'user_id' not in session:
+        return redirect('/login')  # перенаправляем на страницу входа, если пользователь не авторизован
+    user = User.query.filter_by(id=session['user_id']).first()
+    return render_template('profile.html', par=user)
 
 
 # функция кнопки выхода из системы на страницу profile.html - удаляет значение по ключу user_id
@@ -108,7 +110,7 @@ def logout():
 @app.route('/levels_page')
 def levels_page():
     if 'user_id' not in session:
-        return render_template('index.html', sessionId=session.get('user_id', None))
+        return render_template('index.html', sessionId=session.get('user_id', None), user_in_sess=False)
     # если ключ user_id есть в сессиях
     # значит пользователь залогинился, значит отображаем страницу profile.html
     # и передаём в неё пользователя с id, равным значению, который лежит по ключу user_id в сессии
@@ -119,11 +121,10 @@ def levels_page():
 @app.route('/get_level/<int:level_id>')
 def get_level(level_id):
     level = Level.query.get(level_id)
-    print(level.sentence)
-    if level:
-        return render_template('index.html', sentence=level.sentence, level_id=level.id)
+    if level and ('user_id' in session):
+        return render_template('index.html', sentence=level.sentence, level_id=level.id, sessionId=session.get('user_id', None), user_in_sess=True)
     else:
-        return redirect('index')
+        return redirect('index', user_in_sess=False)
     
 
 @app.route('/save_results', methods=['POST'])
@@ -144,6 +145,45 @@ def save_results():
 
     return jsonify({'success': True})
 
+
+@app.route('/get_best_result/<int:level_id>')
+def get_best_result(level_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Вы не вошли в систему'}), 403
+
+    user_id = session['user_id']
+
+    # Лучший результат текущего пользователя
+    user_best_result = Result.query.filter_by(user_id=user_id, level_id=level_id).order_by(Result.speed.desc()).first()
+
+    if user_best_result:
+        user_result_data = {
+            'speed': user_best_result.speed,
+            'accuracy': user_best_result.accuracy,
+            'correct': user_best_result.correct,
+            'incorrect': user_best_result.incorrect,
+            'date': user_best_result.date.strftime('%Y-%m-%d %H:%M:%S')
+        }
+    else:
+        user_result_data = None
+
+    # Лучший результат среди всех пользователей
+    best_result = Result.query.filter_by(level_id=level_id).order_by(Result.speed.desc()).first()
+
+    if best_result:
+        best_user = User.query.get(best_result.user_id)
+        best_result_data = {
+            'speed': best_result.speed,
+            'accuracy': best_result.accuracy,
+            'correct': best_result.correct,
+            'incorrect': best_result.incorrect,
+            'date': best_result.date.strftime('%Y-%m-%d %H:%M:%S'),
+            'username': best_user.username
+        }
+    else:
+        best_result_data = None
+
+    return jsonify({'user_best_result': user_result_data, 'best_result': best_result_data})
 
 
 if __name__ == '__main__':
